@@ -1,12 +1,12 @@
 # Base image met Python 3.9
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 # Werkdirectory in de container
 WORKDIR /app
 
 # Kopieer requirements.txt en installeer afhankelijkheden
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt || cat /path/to/pip.log
 
 # Kopieer de rest van de applicatie
 COPY . .
