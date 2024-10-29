@@ -10,11 +10,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Stap 1: Check out the code
+      # Check out the code
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+      # setup python 3.11  
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
 
-      # Stap 2: Set up Python environment and install dependencies
+      # Set up Python environment and install dependencies
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -25,7 +30,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Stap 2: Log in to DigitalOcean Container Registry
+      # Log in to DigitalOcean Container Registry
       - name: Log in to DigitalOcean
         env:
           DIGITALOCEAN_ACCESS_TOKEN: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
@@ -33,12 +38,12 @@ jobs:
         run: |
           echo "${DIGITALOCEAN_ACCESS_TOKEN}" | docker login registry.digitalocean.com -u "${DIGITALOCEAN_USERNAME}" --password-stdin
 
-      # Stap 3: Build Docker Image
+      # Build Docker Image
       - name: Build Docker image
         run: |
           docker build -t registry.digitalocean.com/devops-cicd/fast-api:latest .
 
-      # Stap 4: Push Docker Image
+      # Push Docker Image
       - name: Push Docker image to DigitalOcean
         run: |
           docker push registry.digitalocean.com/devops-cicd/fast-api:latest
