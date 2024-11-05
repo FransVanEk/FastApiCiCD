@@ -36,7 +36,7 @@ jobs:
       # Write kubeconfig to a file using printf
       - name: Set up Kubeconfig
         run: |
-          printf "%s" "${{ secrets.KUBE_CONFIG }}" > /tmp/kubeconfig
+          printf "%s" "${{ secrets.KUBECONFIG }}" > /tmp/kubeconfig
         shell: bash
 
       - name: Verify Kubeconfig File
