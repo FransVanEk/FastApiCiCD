@@ -39,12 +39,6 @@ jobs:
           printf "%s" "${{ secrets.KUBECONFIG }}" > /tmp/kubeconfig
         shell: bash
 
-      - name: Verify Kubeconfig File
-        run: |
-          ls -la /tmp/kubeconfig
-          head -n 5 /tmp/kubeconfig
-        shell: bash  
-
       # Trigger Kubernetes Rollout Restart
       - name: Rollout Restart Kubernetes Deployment
         uses: actions-hub/kubectl@master
