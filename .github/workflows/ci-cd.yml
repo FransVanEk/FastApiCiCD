@@ -31,3 +31,38 @@ jobs:
       - name: Push Docker image to DigitalOcean
         run: |
           docker push registry.digitalocean.com/devops-cicd/fast-api:latest
+          
+      # Terraform Init
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        run: terraform init
+
+      # Terraform Plan
+      - name: Terraform Plan
+        id: plan
+        env:
+          DIGITALOCEAN_TOKEN: ${{ secrets.DO_TOKEN }}
+        run: terraform plan -out=tfplan
+
+      # Check if Terraform plan has changes
+      - name: Check for changes
+        id: check_changes
+        run: |
+          terraform show -json tfplan | jq .resource_changes | grep -q "[]"
+          echo "::set-output name=has_changes::$?"
+
+      # Terraform Apply if there are changes
+      - name: Terraform Apply
+        if: steps.check_changes.outputs.has_changes == '1'
+        env:
+          DIGITALOCEAN_TOKEN: ${{ secrets.DO_TOKEN }}
+        run: terraform apply -auto-approve tfplan
+
+      # Cleanup plan file
+      - name: Cleanup
+        if: steps.check_changes.outputs.has_changes == '1'
+        run: rm tfplan
