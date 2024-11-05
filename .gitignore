@@ -9,4 +9,4 @@ terraform/.terraform/providers/registry.terraform.io/digitalocean/digitalocean/2
 terraform/.terraform/providers/registry.terraform.io/digitalocean/digitalocean/2.43.0/windows_amd64/terraform-provider-digitalocean_v2.43.0.exe
 terraform/.terraform/providers/registry.terraform.io/hashicorp/kubernetes/2.33.0/windows_amd64/LICENSE.txt
 terraform/.terraform/providers/registry.terraform.io/hashicorp/kubernetes/2.33.0/windows_amd64/terraform-provider-kubernetes_v2.33.0_x5.exe
-terraform/tfplan
+
