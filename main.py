@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = FastAPI()
+applicationKey = "appVersion"
 
 # Database URL from .env
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -33,22 +34,22 @@ async def initialize_database():
     metadata.create_all(engine)
     async with database.transaction():
         # Clear existing data in settings
-        await database.execute("DELETE FROM settings WHERE key = 'DbVersion'")
+        await database.execute("DELETE FROM settings WHERE key = '" + applicationKey + "'")
         # Insert initial data
-        query = settings.insert().values(key="DbVersion", value="2.1")
+        query = settings.insert().values(key=applicationKey, value="2.2")
         await database.execute(query)
 
 # Endpoint to retrieve DbVersion from settings
-@app.get("/dbversion")
+@app.get("/appVersion")
 async def root():
     # Ensure database connection is open
     await database.connect()
     try:
         # Fetch DbVersion from settings
-        query = select(settings.c.value).where(settings.c.key == "DbVersion")
+        query = select(settings.c.value).where(settings.c.key == applicationKey)
         result = await database.fetch_one(query)
-        db_version = result["value"] if result else "Not found"
-        return {"DbVersion": db_version}
+        app_version = result["value"] if result else "Not found"
+        return {applicationKey :  app_version}
     finally:
         await database.disconnect()
 
