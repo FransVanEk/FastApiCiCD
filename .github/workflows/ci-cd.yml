@@ -47,4 +47,4 @@ jobs:
 
       - name: Rollout Restart Deployment
         run: |
-          kubectl rollout restart restart deployment/website -n ns-website-db
+          kubectl rollout restart deployment/website -n ns-website-db
