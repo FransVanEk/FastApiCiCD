@@ -1,5 +1,3 @@
-
-
 # Configureer de DigitalOcean provider
 terraform {
   required_providers {
@@ -178,6 +176,7 @@ resource "kubernetes_deployment" "website" {
         container {
           name  = "website"
           image = "registry.digitalocean.com/devops-cicd/fast-api:latest"
+          image_pull_policy = "Always"
           port {
             container_port = 8000
           }

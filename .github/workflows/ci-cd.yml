@@ -35,7 +35,8 @@ jobs:
 
       # Trigger Kubernetes Rollout Restart      
       - name: Set up Kubeconfig
-        run: |
-          printf "%s" "${{ secrets.KUBECONFIG }}" > /tmp/kubeconfig
-          export KUBECONFIG=/tmp/kubeconfig
-          kubectl rollout restart deployment/<deployment-name> -n <namespace>
+        uses: actions-hub/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        with:
+          args: rollout restart deployment/website -n ns-website-db
