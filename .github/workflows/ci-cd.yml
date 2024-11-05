@@ -67,14 +67,19 @@ jobs:
             -var="docker_server=registry.digitalocean.com"
 
       # Check for Changes
+        
       - name: Check for changes
         id: check_changes
         working-directory: terraform
         run: |
-          terraform show -json tfplan | jq .resource_changes | grep -q "[]"
-          echo "::set-output name=has_changes::$?"
+          HAS_CHANGES=$(terraform show -json tfplan | jq '.resource_changes | length')
+          if [ "$HAS_CHANGES" -gt 0 ]; then
+            echo "has_changes=true" >> $GITHUB_ENV
+          else
+            echo "has_changes=false" >> $GITHUB_ENV
+          fi
 
-      # Terraform Apply if there are changes
+          # Terraform Apply if there are changes
       - name: Terraform Apply
         if: steps.check_changes.outputs.has_changes == '1'
         working-directory: terraform
