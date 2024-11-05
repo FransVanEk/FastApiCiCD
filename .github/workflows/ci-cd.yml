@@ -33,10 +33,16 @@ jobs:
           docker push registry.digitalocean.com/devops-cicd/fast-api:latest
 
 
-      # Trigger Kubernetes Rollout Restart      
+      # Write kubeconfig to a file using printf
       - name: Set up Kubeconfig
+        run: |
+          printf "%s" "${{ secrets.KUBE_CONFIG }}" > /tmp/kubeconfig
+        shell: bash
+
+      # Trigger Kubernetes Rollout Restart
+      - name: Rollout Restart Kubernetes Deployment
         uses: actions-hub/kubectl@master
         env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+          KUBE_CONFIG: /tmp/kubeconfig  # Point to the file path here
         with:
           args: rollout restart deployment/website -n ns-website-db
