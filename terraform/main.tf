@@ -36,6 +36,27 @@ resource "kubernetes_namespace" "namespace_creation" {
   }
 }
 
+# Kubernetes Secret voor Docker-registry
+resource "kubernetes_secret" "do_secret" {
+  metadata {
+    name      = "do-secret"
+    namespace = kubernetes_namespace.namespace_creation.metadata[0].name
+  }
+  type = "kubernetes.io/dockerconfigjson"
+  
+  data = {
+    ".dockerconfigjson" = jsonencode({
+      auths = {
+        "${var.docker_server}" = {
+          username = var.docker_username
+          password = var.do_token
+          email    = var.docker_email
+        }
+      }
+    })
+  }
+}
+
 
 # PersistentVolumeClaim voor PostgreSQL-opslag
 resource "kubernetes_persistent_volume_claim" "postgres_pvc" {
@@ -149,6 +170,9 @@ resource "kubernetes_deployment" "website" {
         }
       }
       spec {
+        image_pull_secrets {
+          name = kubernetes_secret.do_secret.metadata[0].name
+        }
         container {
           name  = "website"
           image = "registry.digitalocean.com/devops-cicd/fast-api:latest"
