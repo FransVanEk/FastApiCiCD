@@ -1,7 +1,7 @@
 venv/
 __pycache__/
 .env
-terraform/variables.tf
+terraform/terraform.tfvars
 terraform/.terraform.lock.hcl
 terraform/.terraform.tfstate.lock.info
 terraform/.terraform/providers/registry.terraform.io/digitalocean/digitalocean/2.43.0/windows_amd64/CHANGELOG.md
