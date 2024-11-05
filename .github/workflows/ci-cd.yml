@@ -32,17 +32,19 @@ jobs:
         run: |
           docker push registry.digitalocean.com/devops-cicd/fast-api:latest
 
-
-      # Write kubeconfig to a file using printf
-      - name: Set up Kubeconfig
-        run: |
-          printf "%s" "${{ secrets.KUBECONFIG }}" > /tmp/kubeconfig
-        shell: bash
-
-      # Trigger Kubernetes Rollout Restart
-      - name: Rollout Restart Kubernetes Deployment
-        uses: actions-hub/kubectl@master
-        env:
-          KUBE_CONFIG: /tmp/kubeconfig  # Point to the file path here
+      # Deploy to DigitalOcean Kubernetes
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v1
         with:
-          args: rollout restart deployment/website -n ns-website-db
+          version: 'latest'
+        
+      - name: Configure kubeconfig
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG }}
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${KUBE_CONFIG_DATA}" > $HOME/.kube/config
+
+      - name: Rollout Restart Deployment
+        run: |
+          kubectl rollout restart restart deployment/website -n ns-website-db
