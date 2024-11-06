@@ -18,19 +18,23 @@ jobs:
       - name: Log in to DigitalOcean
         env:
           DIGITALOCEAN_ACCESS_TOKEN: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
-          DIGITALOCEAN_USERNAME: ${{ github.actor }}  # Placeholder, DigitalOcean only requires the token for now we take the github username
+          DIGITALOCEAN_USERNAME: ${{ github.actor }}
         run: |
           echo "${DIGITALOCEAN_ACCESS_TOKEN}" | docker login registry.digitalocean.com -u "${DIGITALOCEAN_USERNAME}" --password-stdin
 
-      # Build Docker Image
+      # Build Docker Image with Git commit hash as tag
       - name: Build Docker image
+        env:
+          COMMIT_HASH: ${{ github.sha }}
         run: |
-          docker build -t registry.digitalocean.com/devops-cicd/fast-api:latest .
+          docker build -t registry.digitalocean.com/devops-cicd/fast-api:${COMMIT_HASH} .
 
       # Push Docker Image
       - name: Push Docker image to DigitalOcean
+        env:
+          COMMIT_HASH: ${{ github.sha }}
         run: |
-          docker push registry.digitalocean.com/devops-cicd/fast-api:latest
+          docker push registry.digitalocean.com/devops-cicd/fast-api:${COMMIT_HASH}
 
       # Deploy to DigitalOcean Kubernetes
       - name: Set up kubectl
@@ -45,7 +49,8 @@ jobs:
           mkdir -p $HOME/.kube
           echo "${KUBE_CONFIG_DATA}" > $HOME/.kube/config
 
-      - name: Rollout Restart Deployment
-        run:
-          kubectl set image deployment/website website=registry.digitalocean.com/devops-cicd/fast-api:latest -n ns-website-db
-          # kubectl rollout restart deployment/website -n ns-website-db
+      - name: Update Deployment with New Image
+        env:
+          COMMIT_HASH: ${{ github.sha }}
+        run: |
+          kubectl set image deployment/website website=registry.digitalocean.com/devops-cicd/fast-api:${COMMIT_HASH} -n ns-website-db
