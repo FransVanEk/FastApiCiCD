@@ -46,5 +46,6 @@ jobs:
           echo "${KUBE_CONFIG_DATA}" > $HOME/.kube/config
 
       - name: Rollout Restart Deployment
-        run: |
-          kubectl rollout restart deployment/website -n ns-website-db
+        run:
+          kubectl set image deployment/website website=registry.digitalocean.com/devops-cicd/fast-api:latest -n ns-website-db
+          # kubectl rollout restart deployment/website -n ns-website-db
