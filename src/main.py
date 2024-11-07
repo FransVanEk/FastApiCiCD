@@ -53,6 +53,10 @@ async def root():
     finally:
         await database.disconnect()
 
+@app.get("/greet/{name}")
+async def greet(name: str):
+    return {"message": f"Hallo, {name}!"}
+
 
 # Initialize database on startup
 @app.on_event("startup")
