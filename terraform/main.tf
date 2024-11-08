@@ -8,6 +8,15 @@ terraform {
   }
 }
 
+provider "helm" {
+  kubernetes {
+    host                   = digitalocean_kubernetes_cluster.my-devops-cluster2.endpoint
+    token                  = digitalocean_kubernetes_cluster.my-devops-cluster2.kube_config[0].token
+    cluster_ca_certificate = base64decode(digitalocean_kubernetes_cluster.my-devops-cluster2.kube_config[0].cluster_ca_certificate)
+  }
+}
+
+
 provider "digitalocean" {
   token = var.do_token
 }
@@ -22,7 +31,7 @@ provider "kubernetes" {
 resource "digitalocean_kubernetes_cluster" "my-devops-cluster2" {
   name     = var.cluster_name
   region   = var.region
-  version  = "1.31.1-do.3"  # Specificeer de gewenste Kubernetes-versie
+  version  = "1.31.1-do.4"  # Specificeer de gewenste Kubernetes-versie
   node_pool {
     name       = "website-with-db"
     size       = "s-1vcpu-2gb"
@@ -32,9 +41,16 @@ resource "digitalocean_kubernetes_cluster" "my-devops-cluster2" {
 
 resource "kubernetes_namespace" "namespace_creation" {
   metadata {
-    name = var.namespace  # Replace with your desired namespace name
+    name = var.namespace  
   }
 }
+
+resource "kubernetes_namespace" "monitoring" {
+  metadata {
+    name = "monitoring"
+  }
+}
+
 
 # Kubernetes Secret voor Docker-registry
 resource "kubernetes_secret" "do_secret" {
@@ -208,5 +224,33 @@ resource "kubernetes_service" "website" {
       target_port = 8000
     }
     type = "LoadBalancer"
+  }
+}
+
+resource "helm_release" "prometheus" {
+  name       = "prometheus"
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart      = "prometheus"
+  namespace  = kubernetes_namespace.monitoring.metadata[0].name
+
+#  set {
+#    name  = "serviceMonitorSelector"
+#    value = {}
+#  }
+}
+
+resource "helm_release" "grafana" {
+  name       = "grafana"
+  repository = "https://grafana.github.io/helm-charts"
+  chart      = "grafana"
+  namespace  = kubernetes_namespace.monitoring.metadata[0].name
+
+  set {
+    name  = "adminPassword"
+    value = var.grafana_admin_password
+  }
+  set {
+    name  = "service.type"
+    value = "LoadBalancer"
   }
 }
