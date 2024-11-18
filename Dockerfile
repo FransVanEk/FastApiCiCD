@@ -1,16 +1,28 @@
-# Base image met Python 3.11
-FROM python:3.11-slim
+# Stage 1: Base image met Python 3.11
+FROM python:3.11-alpine as builder
+
+# Installeer build dependencies
+RUN apk add --no-cache gcc musl-dev libffi-dev
 
 # Werkdirectory in de container
 WORKDIR /app
 
 # Kopieer requirements.txt en installeer afhankelijkheden
 COPY requirements.txt .
-RUN python -m pip install --no-cache-dir -r requirements.txt --verbose
+RUN python -m pip install --no-cache-dir --prefix=/install -r requirements.txt
 
-# Kopieer de rest van de applicatie
+# Stage 2: Minimalistische runtime image
+FROM python:3.11-alpine
+
+# Werkdirectory instellen
+WORKDIR /app
+
+# Kopieer geïnstalleerde afhankelijkheden van de builder
+COPY --from=builder /install /usr/local
+
+# Kopieer de applicatiecode
 COPY . .
-    
+
 # Exporteer poort 8000 voor de API
 EXPOSE 8000
 
