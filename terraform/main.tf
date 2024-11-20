@@ -191,7 +191,7 @@ resource "kubernetes_deployment" "website" {
         }
         container {
           name  = "website"
-          image = "registry.digitalocean.com/devops-cicd/fast-api:latest"
+          image = "registry.digitalocean.com/devops-cicd/fast-api"
           image_pull_policy = "Always"
           port {
             container_port = 8000
@@ -220,7 +220,7 @@ resource "kubernetes_service" "website" {
       app = "website"
     }
     port {
-      port        = 8000
+      port        = 80
       target_port = 8000
     }
     type = "LoadBalancer"
@@ -228,29 +228,40 @@ resource "kubernetes_service" "website" {
 }
 
 resource "helm_release" "prometheus" {
+#  depends_on = [kubernetes_namespace.monitoring, time_sleep.wait_for_kubernetes]
+  chart      = "kube-prometheus-stack"
   name       = "prometheus"
+  namespace  = "monitoring"
   repository = "https://prometheus-community.github.io/helm-charts"
-  chart      = "prometheus"
-  namespace  = kubernetes_namespace.monitoring.metadata[0].name
-
-#  set {
-#    name  = "serviceMonitorSelector"
-#    value = {}
-#  }
-}
-
-resource "helm_release" "grafana" {
-  name       = "grafana"
-  repository = "https://grafana.github.io/helm-charts"
-  chart      = "grafana"
-  namespace  = kubernetes_namespace.monitoring.metadata[0].name
+  version    = "66.2.1"
+  values = [
+    file("values.yaml")
+  ]
+  timeout = 2000
 
   set {
-    name  = "adminPassword"
-    value = var.grafana_admin_password
+    name  = "podSecurityPolicy.enabled"
+    value = true
   }
+
   set {
-    name  = "service.type"
-    value = "LoadBalancer"
+    name  = "server.persistentVolume.enabled"
+    value = false
+  }
+
+
+  # You can provide a map of value using yamlencode. Don't forget to escape the last element after point in the name
+  set {
+    name = "server\\.resources"
+    value = yamlencode({
+      limits = {
+        cpu    = "200m"
+        memory = "50Mi"
+      }
+      requests = {
+        cpu    = "100m"
+        memory = "30Mi"
+      }
+    })
   }
 }
