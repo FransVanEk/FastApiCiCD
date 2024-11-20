@@ -54,8 +54,7 @@ jobs:
         env:
           COMMIT_HASH: ${{ github.sha }}
         run: |
-          docker push registry.digitalocean.com/devops-cicd/fast-api:${COMMIT_HASH} 
-          docker push registry.digitalocean.com/devops-cicd/fast-api:latest 
+          docker push --all-tags registry.digitalocean.com/devops-cicd/fast-api  
 
       # Deploy to DigitalOcean Kubernetes
       - name: Set up kubectl
