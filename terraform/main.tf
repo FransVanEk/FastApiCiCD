@@ -191,7 +191,7 @@ resource "kubernetes_deployment" "website" {
         }
         container {
           name  = "website"
-          image = "registry.digitalocean.com/devops-cicd/fast-api"
+          image = "registry.digitalocean.com/devops-cicd/fast-api:6f294bf6eff6ff4121a64e521389bec8605cb071"
           image_pull_policy = "Always"
           port {
             container_port = 8000
@@ -226,14 +226,13 @@ resource "kubernetes_service" "website" {
     type = "LoadBalancer"
   }
 }
-
 resource "helm_release" "prometheus" {
 #  depends_on = [kubernetes_namespace.monitoring, time_sleep.wait_for_kubernetes]
   chart      = "kube-prometheus-stack"
   name       = "prometheus"
   namespace  = "monitoring"
   repository = "https://prometheus-community.github.io/helm-charts"
-  version    = "66.2.1"
+  version    = "56.3.0"
   values = [
     file("values.yaml")
   ]
@@ -263,5 +262,9 @@ resource "helm_release" "prometheus" {
         memory = "30Mi"
       }
     })
+  }
+  set {
+    name  = "prometheusOperator.createCustomResource"
+    value = true
   }
 }
