@@ -191,7 +191,7 @@ resource "kubernetes_deployment" "website" {
         }
         container {
           name  = "website"
-          image = "registry.digitalocean.com/devops-cicd/fast-api:6f294bf6eff6ff4121a64e521389bec8605cb071"
+          image = "registry.digitalocean.com/devops-cicd/fast-api:latest"
           image_pull_policy = "Always"
           port {
             container_port = 8000
