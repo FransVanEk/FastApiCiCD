@@ -12,6 +12,7 @@ provider "digitalocean" {
   token = var.do_token
 }
 
+
 provider "kubernetes" {
   host                   = digitalocean_kubernetes_cluster.my_cluster.endpoint
   token                  = digitalocean_kubernetes_cluster.my_cluster.kube_config[0].token
@@ -33,7 +34,7 @@ resource "digitalocean_kubernetes_cluster" "my_cluster" {
   version = "1.31.1-do.4"
 
   node_pool {
-    name       = "default-pool"
+    name       = "webapi-compleet"
     size       = "s-1vcpu-2gb"
     node_count = var.node_count
   }
@@ -52,7 +53,9 @@ resource "kubernetes_namespace" "monitoring_namespace" {
   }
 }
 
-# Secrets
+
+
+
 resource "kubernetes_secret" "docker_registry" {
   metadata {
     name      = "docker-registry"
@@ -60,7 +63,7 @@ resource "kubernetes_secret" "docker_registry" {
   }
   type = "kubernetes.io/dockerconfigjson"
   data = {
-    ".dockerconfigjson" = jsonencode({
+    ".dockerconfigjson" = base64encode(jsonencode({
       auths = {
         "${var.docker_server}" = {
           username = var.docker_username
@@ -68,9 +71,10 @@ resource "kubernetes_secret" "docker_registry" {
           email    = var.docker_email
         }
       }
-    })
+    }))
   }
 }
+
 
 # PersistentVolumeClaim voor PostgreSQL
 resource "kubernetes_persistent_volume_claim" "postgres_pvc" {
@@ -122,6 +126,10 @@ resource "kubernetes_deployment" "postgres" {
           env {
             name  = "POSTGRES_PASSWORD"
             value = var.db_password
+          }
+          env {
+            name  = "PGDATA"
+            value = "/var/lib/postgresql/data/pgdata" # PGDATA instellen
           }
           volume_mount {
             name       = "postgres-storage"
@@ -189,5 +197,71 @@ resource "helm_release" "prometheus" {
   set {
     name  = "server.persistentVolume.enabled"
     value = false
+  }
+}
+
+
+# Website Deployment binnen het Kubernetes-cluster
+resource "kubernetes_deployment" "website" {
+  metadata {
+    name      = "website"
+    namespace = var.namespace
+  }
+  spec {
+    replicas = 1
+    selector {
+      match_labels = {
+        app = "website"
+      }
+    }
+    template {
+      metadata {
+        labels = {
+          app = "website"
+        }
+      }
+      spec {
+        image_pull_secrets {
+          name = kubernetes_secret.docker_registry.metadata[0].name
+        }
+        container {
+          name  = "website"
+          image = "registry.digitalocean.com/devops-cicd/fast-api:latest"
+          image_pull_policy = "Always"
+          port {
+            container_port = 8000
+          }
+          env {
+            name  = "DATABASE_URL"
+            value = "postgresql://${var.db_user}:${var.db_password}@postgres.${var.namespace}.svc.cluster.local:5432/${var.db_name}"
+          }
+        }
+          image_pull_secrets {
+          name = "docker_registry"
+        }
+      }
+    }
+  }
+}
+
+
+resource "kubernetes_service" "webapi-loadbalancer" {
+  metadata {
+    name      = "webapi-loadbalancer"
+    namespace = kubernetes_namespace.app_namespace.metadata[0].name
+  }
+
+  spec {
+    selector = {
+      app = "website" # Match labels van je deployment
+    }
+
+    port {
+      protocol    = "TCP"
+      port        = 80       # Externe poort
+      target_port = 8000     # Poort waar je app luistert
+    }
+
+    type = "LoadBalancer"
   }
 }

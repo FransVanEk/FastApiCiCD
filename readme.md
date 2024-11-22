@@ -208,5 +208,21 @@ kubectl port-forward service/prometheus-grafana 3000:80 -n monitoring
 
 Open vervolgens Grafana in je browser op `http://localhost:3000`. Log in met de standaardgebruikersnaam `admin` en het wachtwoord dat je hebt ingesteld in `values.yaml`.
 
+## Toevoeging
 
+in de folder terraform kun je ook een variable bestand toevoegen waarin je jouw settings set 
 
+```yaml
+do_token      = "<jouw token>"
+cluster_name  = "my-devops-cluster2"
+region        = "ams3"
+node_count    = 2
+namespace     = "ns-website-db"
+db_name       = "my_database"
+db_user       = "db_user"
+db_password   = "mypassword"
+docker_server = "registry.digitalocean.com"
+docker_username = "<jouw naam>"
+docker_email = "<jouw email adres>"
+monitoring_namespace = "monitoring"
+```
