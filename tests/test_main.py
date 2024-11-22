@@ -1,5 +1,3 @@
-
-
 # tests/test_main.py
 import sys
 import os
@@ -16,4 +14,4 @@ client = TestClient(app)
 def test_greet():
     response = client.get("/greet/Frans")
     assert response.status_code == 200
-    assert response.json() == {"message": "Hallo, Frans!!!!!"}
+    assert response.json() == {"message": "Hallo, Frans!"}

@@ -68,3 +68,9 @@ variable "grafana_admin_password" {
   type        = string
   default     = "Ikwiltoegang!"
 }
+
+variable "monitoring_namespace" {
+  description = "Namespace voor monitoring resources (zoals Prometheus)"
+  type        = string
+  default     = "monitoring"
+}
