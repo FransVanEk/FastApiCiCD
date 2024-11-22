@@ -53,17 +53,15 @@ resource "kubernetes_namespace" "monitoring_namespace" {
   }
 }
 
-
-
-
 resource "kubernetes_secret" "docker_registry" {
   metadata {
     name      = "docker-registry"
     namespace = kubernetes_namespace.app_namespace.metadata[0].name
   }
   type = "kubernetes.io/dockerconfigjson"
+
   data = {
-    ".dockerconfigjson" = base64encode(jsonencode({
+    ".dockerconfigjson" = jsonencode({
       auths = {
         "${var.docker_server}" = {
           username = var.docker_username
@@ -71,10 +69,9 @@ resource "kubernetes_secret" "docker_registry" {
           email    = var.docker_email
         }
       }
-    }))
+    })
   }
 }
-
 
 # PersistentVolumeClaim voor PostgreSQL
 resource "kubernetes_persistent_volume_claim" "postgres_pvc" {
