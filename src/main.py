@@ -45,7 +45,7 @@ async def initialize_database():
             {"key": Config.SETTINGS_KEY_APPVERSION}
         )
         query = settings.insert().values(
-            key=Config.SETTINGS_KEY_APPVERSION, value="3.5.3"
+            key=Config.SETTINGS_KEY_APPVERSION, value="3.5.4"
         )
         await database.execute(query)
 
