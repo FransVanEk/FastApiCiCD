@@ -36,7 +36,7 @@ async def initialize_database():
         # Clear existing data in settings
         await database.execute("DELETE FROM settings WHERE key = '" + applicationKey + "'")
         # Insert initial data
-        query = settings.insert().values(key=applicationKey, value="3.3")
+        query = settings.insert().values(key=applicationKey, value="3.5.9")
         await database.execute(query)
 
 # Endpoint to retrieve DbVersion from settings
@@ -55,7 +55,7 @@ async def root():
 
 @app.get("/greet/{name}")
 async def greet(name: str):
-    return {"message": f"Hallo, {name}!!!!!"}
+    return {"message": f"Hallo, {name}!"}
 
 
 # Initialize database on startup
