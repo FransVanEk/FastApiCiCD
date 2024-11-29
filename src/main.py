@@ -5,6 +5,7 @@ from databases import Database
 from prometheus_client import Counter, Summary, generate_latest, CONTENT_TYPE_LATEST
 from starlette.responses import Response
 from dotenv import load_dotenv
+from functools import wraps
 import os
 
 # Load environment variables from .env file
@@ -64,6 +65,7 @@ async def metrics():
 # Decorator for tracking Prometheus metrics
 def track_metrics(endpoint: str):
     def decorator(func):
+        @wraps(func)  # Preserve the original function's signature
         async def wrapper(*args, **kwargs):
             REQUEST_COUNT.labels(method="GET", endpoint=endpoint, status="200").inc()
             with REQUEST_LATENCY.time():
