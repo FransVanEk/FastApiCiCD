@@ -1,9 +1,11 @@
-import os
 from fastapi import FastAPI
-from sqlalchemy import create_engine, MetaData, Table, Column, String
+from sqlalchemy import MetaData, create_engine, Table, Column, String
 from sqlalchemy.sql import select
 from databases import Database
+from prometheus_client import Counter, Summary, generate_latest, CONTENT_TYPE_LATEST
+from starlette.responses import Response
 from dotenv import load_dotenv
+import os
 
 # Load environment variables from .env file
 load_dotenv()
@@ -39,8 +41,41 @@ async def initialize_database():
         query = settings.insert().values(key=applicationKey, value="3.6.1")
         await database.execute(query)
 
+# Prometheus metrics
+REQUEST_COUNT = Counter("http_requests_total", "Total HTTP requests", ["method", "endpoint", "status"])
+REQUEST_LATENCY = Summary("http_request_latency_seconds", "Request latency in seconds")
+
+# Create the settings table if it doesn't exist
+async def initialize_database():
+    await database.connect()
+    metadata.create_all(engine)
+    async with database.transaction():
+        # Clear existing data in settings
+        await database.execute(f"DELETE FROM settings WHERE key = '{applicationKey}'")
+        # Insert initial data
+        query = settings.insert().values(key=applicationKey, value="3.6.1")
+        await database.execute(query)
+
+# Prometheus metrics endpoint
+@app.get("/metrics")
+async def metrics():
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
+# Decorator for tracking Prometheus metrics
+def track_metrics(endpoint: str):
+    def decorator(func):
+        async def wrapper(*args, **kwargs):
+            REQUEST_COUNT.labels(method="GET", endpoint=endpoint, status="200").inc()
+            with REQUEST_LATENCY.time():
+                return await func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
+
 # Endpoint to retrieve DbVersion from settings
 @app.get("/appVersion")
+@track_metrics("/appVersion")
 async def root():
     # Ensure database connection is open
     await database.connect()
@@ -54,6 +89,7 @@ async def root():
         await database.disconnect()
 
 @app.get("/greet/{name}")
+@track_metrics("/greet/{name}")
 async def greet(name: str):
     return {"message": f"Hallo, {name}!"}
 
