@@ -4,6 +4,15 @@ rbac:
 podSecurityPolicy:
   enabled: false
 
+prometheus:
+  prometheusSpec:
+    additionalScrapeConfigs:
+      - job_name: 'python-api'
+        scrape_interval: 15s
+        static_configs:
+          - targets: ['webapi-loadbalancer.ns-website-db.svc.cluster.local:80']
+
+
 server:
   persistentVolume:
     enabled: false
