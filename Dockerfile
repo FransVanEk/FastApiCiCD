@@ -1,5 +1,5 @@
 # Stage 1: Base image met Python 3.11
-FROM python:3.11-alpine as builder
+FROM python:3.11-alpine AS builder
 
 # Installeer build dependencies
 RUN apk add --no-cache gcc musl-dev libffi-dev

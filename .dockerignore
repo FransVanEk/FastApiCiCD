@@ -1,1 +1,30 @@
+# Terraform bestanden en directories uitsluiten
+terraform/
+
+# Python cache directories uitsluiten
+__pycache__/
+
+# Algemene Python-ontwikkelingsbestanden uitsluiten
+*.pyc
+*.pyo
+*.pyd
+
+# Virtuele omgevingen uitsluiten
+venv/
+.env/
 .env
+
+# Docker zelf uitsluiten
+.dockerignore
+Dockerfile
+
+# Git-bestanden uitsluiten
+.git/
+.gitignore
+
+.vscode/
+
+.test/
+
+*.md
+
