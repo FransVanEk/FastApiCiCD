@@ -38,7 +38,8 @@ jobs:
       - name: Log in to DigitalOcean
         env:
           DIGITALOCEAN_ACCESS_TOKEN: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
-          DIGITALOCEAN_USERNAME: ${{ github.actor }}
+#          DIGITALOCEAN_USERNAME: ${{ github.actor }}
+          DIGITALOCEAN_USERNAME: ${{ secrets.DIGITALOCEAN_USERNAME }}
         run: |
           echo "${DIGITALOCEAN_ACCESS_TOKEN}" | docker login registry.digitalocean.com -u "${DIGITALOCEAN_USERNAME}" --password-stdin
 
