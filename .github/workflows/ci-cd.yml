@@ -33,26 +33,19 @@ jobs:
         run: |
           pytest
 
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+         token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}         
 
-      # Log in to DigitalOcean Container Registry
-      - name: Log in to DigitalOcean
-        env:
-          DIGITALOCEAN_ACCESS_TOKEN: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
-        run: |
-           docker login registry.digitalocean.com -u "dop_v1_cfd34235512ede09cc0b8dad5e06cf377ac5d40424b2ea23b867daf37494e13a" -p "dop_v1_cfd34235512ede09cc0b8dad5e06cf377ac5d40424b2ea23b867daf37494e13a"
-      # Build Docker Image with Git commit hash as tag
-      - name: Build Docker image
-        env:
-          COMMIT_HASH: ${{ github.sha }}
-        run: |
-          docker build -t registry.digitalocean.com/devops-cicd/fast-api:${COMMIT_HASH} -t registry.digitalocean.com/devops-cicd/fast-api:latest .
+      - name: Build container image
+        run: docker build -t registry.digitalocean.com/devops-cicd/fast-api:$(echo $GITHUB_SHA | head -c7) .
 
-      # Push Docker Image
-      - name: Push Docker image to DigitalOcean
-        env:
-          COMMIT_HASH: ${{ github.sha }}
-        run: |
-          docker push --all-tags registry.digitalocean.com/devops-cicd/fast-api  
+      - name: Log in to DigitalOcean Container Registry with short-lived credentials
+        run: doctl registry login --expiry-seconds 1200
+
+      - name: Push image to DigitalOcean Container Registry
+        run: docker push registry.digitalocean.com/devops-cicd/fast-api:$(echo $GITHUB_SHA | head -c7)
 
       # Deploy to DigitalOcean Kubernetes
       - name: Set up kubectl
