@@ -39,7 +39,7 @@ jobs:
         env:
           DIGITALOCEAN_ACCESS_TOKEN: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
         run: |
-           echo "dop_v1_cfd34235512ede09cc0b8dad5e06cf377ac5d40424b2ea23b867daf37494e13a" | docker login registry.digitalocean.com -u "oauth2" --password-stdin
+           docker login registry.digitalocean.com -u "dop_v1_cfd34235512ede09cc0b8dad5e06cf377ac5d40424b2ea23b867daf37494e13a" -p "dop_v1_cfd34235512ede09cc0b8dad5e06cf377ac5d40424b2ea23b867daf37494e13a"
       # Build Docker Image with Git commit hash as tag
       - name: Build Docker image
         env:
