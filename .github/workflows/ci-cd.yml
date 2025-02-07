@@ -39,13 +39,16 @@ jobs:
          token: ${{ secrets.DO_TOKEN }}         
 
       - name: Build container image
-        run: docker build -t registry.digitalocean.com/devops-cicd/fast-api:$(echo $GITHUB_SHA | head -c7) .
+        env:
+          COMMIT_HASH: ${{ github.sha }}
+        run: |
+          docker build -t registry.digitalocean.com/devops-cicd/fast-api:${COMMIT_HASH} -t registry.digitalocean.com/devops-cicd/fast-api:latest . 
 
       - name: Log in to DigitalOcean Container Registry with short-lived credentials
         run: doctl registry login --expiry-seconds 1200
 
       - name: Push image to DigitalOcean Container Registry
-        run: docker push registry.digitalocean.com/devops-cicd/fast-api:$(echo $GITHUB_SHA | head -c7)
+        run: docker push --all-tags registry.digitalocean.com/devops-cicd/fast-api 
 
       # Deploy to DigitalOcean Kubernetes
       - name: Set up kubectl
