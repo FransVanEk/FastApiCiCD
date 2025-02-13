@@ -19,7 +19,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Set up SQLAlchemy and Database connection
 metadata = MetaData()
-database = Database(DATABASE_URL)
+database = Database(DATABASE_URL, min_size=1, max_size=10)  # Use connection pooling
 engine = create_engine(DATABASE_URL)
 
 # Define the settings table
@@ -30,26 +30,16 @@ settings = Table(
     Column("value", String)
 )
 
-# Create the settings table if it doesn't exist
-async def initialize_database():
-    await database.connect()
-    # Create tables
-    metadata.create_all(engine)
-    async with database.transaction():
-        # Clear existing data in settings
-        await database.execute("DELETE FROM settings WHERE key = '" + applicationKey + "'")
-        # Insert initial data
-        query = settings.insert().values(key=applicationKey, value="3.6.1")
-        await database.execute(query)
+# Ensure the settings table exists
+def initialize_database():
+    metadata.create_all(engine)  # This should only be run once, in a sync context
 
 # Prometheus metrics
 REQUEST_COUNT = Counter("http_requests_total", "Total HTTP requests", ["method", "endpoint", "status"])
 REQUEST_LATENCY = Summary("http_request_latency_seconds", "Request latency in seconds")
 
-# Create the settings table if it doesn't exist
-async def initialize_database():
-    await database.connect()
-    metadata.create_all(engine)
+# Initialize database and insert default data
+async def initialize_database_async():
     async with database.transaction():
         # Clear existing data in settings
         await database.execute(f"DELETE FROM settings WHERE key = '{applicationKey}'")
@@ -73,30 +63,28 @@ def track_metrics(endpoint: str):
         return wrapper
     return decorator
 
-
-
 # Endpoint to retrieve DbVersion from settings
 @app.get("/appVersion")
 @track_metrics("/appVersion")
 async def root():
-    # Ensure database connection is open
-    await database.connect()
-    try:
-        # Fetch DbVersion from settings
-        query = select(settings.c.value).where(settings.c.key == applicationKey)
-        result = await database.fetch_one(query)
-        app_version = result["value"] if result else "Not found"
-        return {applicationKey :  app_version}
-    finally:
-        await database.disconnect()
+    # Fetch DbVersion from settings
+    query = select(settings.c.value).where(settings.c.key == applicationKey)
+    result = await database.fetch_one(query)
+    app_version = result["value"] if result else "Not found"
+    return {applicationKey: app_version}
 
 @app.get("/greet/{name}")
 @track_metrics("/greet/{name}")
 async def greet(name: str):
     return {"message": f"Hallo, {name}!"}
 
-
 # Initialize database on startup
 @app.on_event("startup")
 async def on_startup():
-    await initialize_database()
+    initialize_database()  # Run this in sync mode
+    await database.connect()
+    await initialize_database_async()  # Run async setup
+
+@app.on_event("shutdown")
+async def on_shutdown():
+    await database.disconnect()
