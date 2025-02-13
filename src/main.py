@@ -78,7 +78,7 @@ async def root():
 async def greet(name: str):
     return {"message": f"Hallo, {name}!"}
 
-# Initialize database on startup
+# Initialize database on startup!
 @app.on_event("startup")
 async def on_startup():
     initialize_database()  # Run this in sync mode
