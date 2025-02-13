@@ -34,6 +34,11 @@ jobs:
         run: |
           pytest
 
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+         token: ${{ secrets.DO_TOKEN }}         
+
 
       # Log in to DigitalOcean Container Registry
       - name: Log in to DigitalOcean
@@ -48,14 +53,13 @@ jobs:
         env:
           COMMIT_HASH: ${{ github.sha }}
         run: |
-          docker build -t registry.digitalocean.com/devops-cicd/fast-api:${COMMIT_HASH} -t registry.digitalocean.com/devops-cicd/fast-api:latest .
+          docker build -t registry.digitalocean.com/devops-cicd/fast-api:${COMMIT_HASH} -t registry.digitalocean.com/devops-cicd/fast-api:latest . 
 
-      # Push Docker Image
-      - name: Push Docker image to DigitalOcean
-        env:
-          COMMIT_HASH: ${{ github.sha }}
-        run: |
-          docker push --all-tags registry.digitalocean.com/devops-cicd/fast-api  
+      - name: Log in to DigitalOcean Container Registry with short-lived credentials
+        run: doctl registry login --expiry-seconds 1200
+
+      - name: Push image to DigitalOcean Container Registry
+        run: docker push --all-tags registry.digitalocean.com/devops-cicd/fast-api 
 
       # Deploy to DigitalOcean Kubernetes
       - name: Set up kubectl
