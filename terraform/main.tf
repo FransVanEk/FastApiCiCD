@@ -19,13 +19,13 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(digitalocean_kubernetes_cluster.my_cluster.kube_config[0].cluster_ca_certificate)
 }
 
-provider "helm" {
-  kubernetes {
-    host                   = digitalocean_kubernetes_cluster.my_cluster.endpoint
-    token                  = digitalocean_kubernetes_cluster.my_cluster.kube_config[0].token
-    cluster_ca_certificate = base64decode(digitalocean_kubernetes_cluster.my_cluster.kube_config[0].cluster_ca_certificate)
-  }
-}
+#provider "helm" {
+#  kubernetes {
+#    host                   = digitalocean_kubernetes_cluster.my_cluster.endpoint
+#    token                  = digitalocean_kubernetes_cluster.my_cluster.kube_config[0].token
+#    cluster_ca_certificate = base64decode(digitalocean_kubernetes_cluster.my_cluster.kube_config[0].cluster_ca_certificate)
+#  }
+#}
 
 # Kubernetes-cluster aanmaken
 resource "digitalocean_kubernetes_cluster" "my_cluster" {
@@ -162,40 +162,40 @@ resource "kubernetes_service" "postgres" {
   }
 }
 
-resource "kubernetes_config_map" "grafana_dashboard" {
-  metadata {
-    name      = "fastapi-cluster-dashboard"
-    namespace = kubernetes_namespace.monitoring_namespace.metadata[0].name
-    labels = {
-      grafana_dashboard = "1"
-    }
-  }
+#resource "kubernetes_config_map" "grafana_dashboard" {
+#  metadata {
+#    name      = "fastapi-cluster-dashboard"
+#    namespace = kubernetes_namespace.monitoring_namespace.metadata[0].name
+#    labels = {
+#      grafana_dashboard = "1"
+#    }
+#  }
+#
+#  data = {
+#    "fastapi-cluster-dashboard.json" = file("${path.module}/grafana/dashboards/fastapi-cluster-dashboard.json")
+#  }
+#}
 
-  data = {
-    "fastapi-cluster-dashboard.json" = file("${path.module}/grafana/dashboards/fastapi-cluster-dashboard.json")
-  }
-}
 
-
-# Helm Release: Prometheus
-resource "helm_release" "prometheus" {
-  chart      = "kube-prometheus-stack"
-  name       = "prometheus"
-  namespace  = kubernetes_namespace.monitoring_namespace.metadata[0].name
-  repository = "https://prometheus-community.github.io/helm-charts"
-  version    = "56.3.0"
-  values = [file("${path.module}/values.yaml")]
-
-  set {
-    name  = "podSecurityPolicy.enabled"
-    value = true
-  }
-
-  set {
-    name  = "server.persistentVolume.enabled"
-    value = false
-  }
-}
+## Helm Release: Prometheus
+#resource "helm_release" "prometheus" {
+#  chart      = "kube-prometheus-stack"
+#  name       = "prometheus"
+#  namespace  = kubernetes_namespace.monitoring_namespace.metadata[0].name
+#  repository = "https://prometheus-community.github.io/helm-charts"
+#  version    = "56.3.0"
+#  values = [file("${path.module}/values.yaml")]
+#
+#  set {
+#    name  = "podSecurityPolicy.enabled"
+#    value = true
+#  }
+#
+#  set {
+#    name  = "server.persistentVolume.enabled"
+#    value = false
+#  }
+#}
 
 
 # Website Deployment binnen het Kubernetes-cluster
