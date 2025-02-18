@@ -76,7 +76,7 @@ async def root():
 @app.get("/greet/{name}")
 @track_metrics("/greet/{name}")
 async def greet(name: str):
-    return {"message": f"Hallo, {name}!"}
+    return {"message": f"Greetings, {name}!"}
 
 # Initialize database on startup!
 @app.on_event("startup")
