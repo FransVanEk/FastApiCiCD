@@ -44,7 +44,7 @@ async def initialize_database_async():
         # Clear existing data in settings
         await database.execute(f"DELETE FROM settings WHERE key = '{applicationKey}'")
         # Insert initial data
-        query = settings.insert().values(key=applicationKey, value="3.6.5")
+        query = settings.insert().values(key=applicationKey, value="3.6.6")
         await database.execute(query)
 
 # Prometheus metrics endpoint
