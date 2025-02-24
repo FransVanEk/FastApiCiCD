@@ -18,6 +18,14 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(digitalocean_kubernetes_cluster.my_cluster.kube_config[0].cluster_ca_certificate)
 }
 
+provider "helm" {
+  kubernetes {
+    host                   = digitalocean_kubernetes_cluster.my_cluster.endpoint
+    token                  = digitalocean_kubernetes_cluster.my_cluster.kube_config[0].token
+    cluster_ca_certificate = base64decode(digitalocean_kubernetes_cluster.my_cluster.kube_config[0].cluster_ca_certificate)
+  }
+}
+
 # Kubernetes Cluster
 resource "digitalocean_kubernetes_cluster" "my_cluster" {
   name    = var.cluster_name
@@ -72,7 +80,7 @@ resource "kubernetes_deployment" "website" {
     namespace = var.namespace
   }
   spec {
-    replicas = 2
+    replicas = 3
     selector {
       match_labels = {
         app = "website"
@@ -124,5 +132,25 @@ resource "kubernetes_service" "webapi-loadbalancer" {
     }
 
     type = "LoadBalancer"
+  }
+}
+
+# Helm Release: Prometheus
+resource "helm_release" "prometheus" {
+  chart      = "kube-prometheus-stack"
+  name       = "prometheus"
+  namespace  = kubernetes_namespace.monitoring_namespace.metadata[0].name
+  repository = "https://prometheus-community.github.io/helm-charts"
+  version    = "56.3.0"
+  values = [file("${path.module}/values.yaml")]
+
+  set {
+    name  = "podSecurityPolicy.enabled"
+    value = true
+  }
+
+  set {
+    name  = "server.persistentVolume.enabled"
+    value = false
   }
 }
