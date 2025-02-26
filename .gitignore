@@ -11,6 +11,6 @@ terraform/tfplan
 terraform/.terraform.lock.hcl
 
 terraform/.terraform/
-terraform/grafana/
+
 
 .idea/
