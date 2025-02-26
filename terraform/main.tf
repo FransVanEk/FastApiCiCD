@@ -80,7 +80,7 @@ resource "kubernetes_deployment" "website" {
     namespace = var.namespace
   }
   spec {
-    replicas = 3
+    replicas = 2
     selector {
       match_labels = {
         app = "website"

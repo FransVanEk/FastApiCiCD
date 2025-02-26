@@ -6,6 +6,7 @@ from prometheus_client import Counter, Summary, generate_latest, CONTENT_TYPE_LA
 from starlette.responses import Response
 from dotenv import load_dotenv
 from functools import wraps
+from functools import lru_cache
 import os
 
 # Load environment variables from .env file
@@ -79,7 +80,7 @@ async def greet(name: str):
     return {"message": f"Greetings, {name}!"}
 
 # Recursive Fibonacci function with memoization to improve performance
-#@lru_cache(maxsize=None)
+@lru_cache(maxsize=None)
 def fibonacci(n: int) -> int:
     if n <= 0:
         return 0
