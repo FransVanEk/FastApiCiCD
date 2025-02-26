@@ -154,3 +154,18 @@ resource "helm_release" "prometheus" {
     value = false
   }
 }
+
+resource "kubernetes_config_map" "grafana_dashboard" {
+  metadata {
+    name      = "grafana-dashboards"
+    namespace = kubernetes_namespace.monitoring_namespace.metadata[0].name
+    labels = {
+      grafana_dashboard = "1"
+    }
+  }
+
+  data = {
+    "fastapi-cluster-dashboard.json" = file("${path.module}/grafana/dashboards/fastapi-cluster-dashboard.json")
+    "demo-dashboard.json"            = file("${path.module}/grafana/dashboards/demo.json")
+  }
+}

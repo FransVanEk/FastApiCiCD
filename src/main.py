@@ -78,6 +78,24 @@ async def root():
 async def greet(name: str):
     return {"message": f"Greetings, {name}!"}
 
+# Recursive Fibonacci function with memoization to improve performance
+#@lru_cache(maxsize=None)
+def fibonacci(n: int) -> int:
+    if n <= 0:
+        return 0
+    elif n == 1:
+        return 1
+    return fibonacci(n - 1) + fibonacci(n - 2)
+
+@app.get("/fibonacci/{x}")
+async def get_fibonacci(x: int):
+    if x < 0:
+        return {"error": "Input must be a non-negative integer"}
+    
+    fib_number = fibonacci(x)
+    return {"fibonacci": fib_number}
+
+
 # Initialize database on startup!
 @app.on_event("startup")
 async def on_startup():
