@@ -66,7 +66,6 @@ resource "kubernetes_secret" "docker_registry" {
         "${var.docker_server}" = {
           username = var.docker_username
           password = var.do_token
-          email    = var.docker_email
         }
       }
     })
@@ -152,6 +151,11 @@ resource "helm_release" "prometheus" {
   set {
     name  = "server.persistentVolume.enabled"
     value = false
+  }
+
+  set {
+    name  = "grafana.adminPassword"
+    value = var.grafana_admin_password
   }
 }
 

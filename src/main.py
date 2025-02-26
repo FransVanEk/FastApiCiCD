@@ -89,6 +89,7 @@ def fibonacci(n: int) -> int:
     return fibonacci(n - 1) + fibonacci(n - 2)
 
 @app.get("/fibonacci/{x}")
+@track_metrics("/appVersion")
 async def get_fibonacci(x: int):
     if x < 0:
         return {"error": "Input must be a non-negative integer"}

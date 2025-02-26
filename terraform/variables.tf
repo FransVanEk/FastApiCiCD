@@ -73,3 +73,8 @@ variable "monitoring_namespace" {
   description = "Kubernetes namespace for monitoring"
   type        = string
 }
+
+variable "grafana_admin_password" {
+  description = "Admin password for Grafana"
+  type        = string
+}
