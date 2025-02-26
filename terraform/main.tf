@@ -170,6 +170,6 @@ resource "kubernetes_config_map" "grafana_dashboard" {
 
   data = {
     "fastapi-cluster-dashboard.json" = file("${path.module}/grafana/dashboards/fastapi-cluster-dashboard.json")
-    "demo-dashboard.json"            = file("${path.module}/grafana/dashboards/demo.json")
+    "demo-dashboard.json"            = file("${path.module}/grafana/dashboards/FastAPI-Monitoring-Dashboard.json")
   }
 }
